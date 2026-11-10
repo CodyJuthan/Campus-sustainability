@@ -1,0 +1,129 @@
+#Carbon Emmissions Model Demo
+#Made by Claudiu Costea X00227976
+
+import joblib
+import pandas as pd
+
+#Load saved model
+model = joblib.load("carbon_emissions_model.joblib")
+
+#Load dataset to calculate sustainability averages
+df = pd.read_csv("campus_sustainability_dataset.csv")
+
+def sustainability_score(predicted_value):
+    campus_average = df["Carbon_Emissions_kgCO2"].mean()
+    score = 100 - ((predicted_value - campus_average) / campus_average) * 100
+    score = max(0, min(100, score))  #Keeps results between 0–100 to keep results realistic
+    return score
+
+def recommendations(user):
+    print("Recommendations")
+    print("------------------------------------------------------------------")
+
+    #Transportation recommendations
+    if user["Transportation_Mode"] == "Car":
+        print("Consider walking, cycling, public transport, or even carpooling to reduce carbon emissions.")
+
+    if user["Transportation_Mode"] == "Bicycle":
+        print("Great choice of transportation for the environment. Cycling has one of the lowest carbon footprints.")
+
+    if user["Transportation_Mode"] == "Walking":
+        print("Walking is the best mode of transport option for the environment. Well done. ")
+
+    if user["Transportation_Mode"] == "Public Transport":
+        print("Public transport is a great choice of transportation. However, if possible, walk or use a bicycle when possible.")
+
+    #Recycling habits recommendations
+
+    if user["Recycling_Habits"] == "Never":
+        print("Start recycling to greatly reduce your carbon footprint.")
+
+    if user["Recycling_Habits"] == "Sometimes":
+        print("Good job. However, try to recycle more consistently to reduce carbon emissions")
+
+    if user["Recycling_Habits"] == "Always":
+        print("Excellent. Continue recycling.")
+
+    #Food type recommendations
+
+    if user["Food_Type"] == "Non-Vegetarian":
+        print("Consider replacing some meat based meals with plant based alternatives to reduce emissions.")
+
+    if user["Food_Type"] == "Mixed":
+        print("Try to include more plant based meals in your daily routine to lower your carbon footprint.")
+
+    if user["Food_Type"] == "Vegetarian":
+        print("Vegetarian diets tend to be very sustainable for the environment, well done.")
+
+    if user["Food_Type"] == "Vegan":
+        print("Excellent. Vegan diets have the lowest carbon emissions.")
+
+    #Energy usage recommendations
+    
+    if user["Energy_Usage_kWh_per_Month"] > df["Energy_Usage_kWh_per_Month"].mean():
+        print("Reduce your energy usage by turning off unused devices, using LED bulbs, lowering heating settings, "
+              "and avoiding unnecessary appliance use.")
+    else:
+        print("Your energy usage is below the campus average. Keep it up!")
+
+    #Water usage recommendations
+
+    if user["Water_Usage_Liters_per_Day"] > df["Water_Usage_Liters_per_Day"].mean():
+        print("Reduce your water usage by taking shorter showers, fixing leaks, and turning off taps when not needed.")
+    else:
+        print("Your water usage is lower than the campus average. Keep it up!")
+
+    # Clothing spend recommendations
+    
+    if user["Clothing_Spend_per_Month"] > df["Clothing_Spend_per_Month"].mean():
+        print("Try to buy fewer or more sustainable clothing items to decrease carbon emissions.")
+    else:
+        print("Your clothing spending is sustainable for the environement. Keep it up!")
+
+    # Consumption spend recommendations
+
+    if user["Consumption_Spend_per_Month"] > df["Consumption_Spend_per_Month"].mean():
+        print("Try reducing unnecessary consumption by purchasing only what you need.")
+    else:
+        print("Your consumption habits are efficient. Keep it up!")
+
+    print("-------------------------------------------------------------------\n")
+
+def demo():
+    print("\n------------------------------------")
+    print(" CAMPUS SUSTAINABILITY AI PREDICTOR")
+    print("------------------------------------\n")
+
+    # User inputs
+    clothing = float(input("Clothing spend per month (€): "))
+    food = input("Food Type: Vegetarian / Vegan / Mixed / Non-Vegetarian: ")
+    housing = input("Housing: Apartment / Own House / Shared House: ")
+    energy = float(input("Energy usage per month (kWh): "))
+    water = float(input("Daily water usage (litres): "))
+    transport = input("Transport: Car / Bicycle / Walking / Bus / Public Transport: ")
+    consumption = float(input("Consumption spend per month (€): "))
+    recycling = input("Recycling habits: Always / Sometimes / Never: ")
+
+    user_data = pd.DataFrame([{
+        "Clothing_Spend_per_Month": clothing,
+        "Food_Type": food,
+        "Housing_Type": housing,
+        "Energy_Usage_kWh_per_Month": energy,
+        "Water_Usage_Liters_per_Day": water,
+        "Transportation_Mode": transport,
+        "Consumption_Spend_per_Month": consumption,
+        "Recycling_Habits": recycling
+    }])
+
+    prediction = model.predict(user_data)[0]
+    score = sustainability_score(prediction)
+
+    print("\n------------------------------------")
+    print("AI Prediction Results")
+    print("------------------------------------")
+    print(f"Estimated Carbon Emissions: {prediction:.2f} kg CO₂ per month")
+    print(f"Sustainability Score: {score:.1f} / 100")
+    print("------------------------------------")
+    recommendations(user_data.iloc[0])
+
+demo()
